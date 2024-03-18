@@ -1,23 +1,21 @@
 package com.example.demo.test;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 
-class NonBlockingTest {
+class BnaTest {
 
     int count = 30;
 
+    /**
+     * https://velog.io/@nittre/%EB%B8%94%EB%A1%9C%ED%82%B9-Vs.-%EB%85%BC%EB%B8%94%EB%A1%9C%ED%82%B9-%EB%8F%99%EA%B8%B0-Vs.-%EB%B9%84%EB%8F%99%EA%B8%B0
+     */
     @Test
     void blocking() {
         RestTemplate restTemplate = new RestTemplate();
@@ -27,6 +25,9 @@ class NonBlockingTest {
         }
     }
 
+    /**
+     * https://velog.io/@jihoson94/EventLoopModelInSpring
+     */
     @Test
     void nonBlocking() {
 
@@ -44,6 +45,29 @@ class NonBlockingTest {
                         return Mono.just(body);
                     })
                     .subscribe();
+        }
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    void nioBlocking() {
+
+        WebClient webClient = WebClient.builder()
+                .baseUrl("http://localhost:8080")
+                .build();
+
+        for (int i = 0; i < count; i++) {
+            String body = webClient.get()
+                    .uri("/api/count")
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+            System.out.println(Thread.currentThread().getName() + " : Response Body: " + body);
         }
 
         try {

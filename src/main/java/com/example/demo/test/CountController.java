@@ -13,9 +13,6 @@ public class CountController {
 
     @GetMapping("")
     public ResponseEntity<?> count() {
-        if (COUNT > 29) {
-            COUNT = 0;
-        }
         return ResponseEntity.ok(COUNT++);
     }
 
